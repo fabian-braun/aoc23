@@ -10,10 +10,10 @@ fn main() {
         .map(|s| {
             let i_first = s.find(numbers).unwrap();
             let i_last = s.rfind(numbers).unwrap();
-            let first = usize::from_str(&s.chars().nth(i_first).unwrap().to_string()).unwrap();
-            let last = usize::from_str(&s.chars().nth(i_last).unwrap().to_string()).unwrap();
-            println!("{first}{last}");
-            first + last
+            let mut first = s.chars().nth(i_first).unwrap().to_string();
+            let last = s.chars().nth(i_last).unwrap().to_string();
+            first.push_str(&last);
+            usize::from_str(&first).unwrap()
         })
         .sum();
     println!("Hello, world! The calibration sum is {}", calibration_value_sum);
