@@ -1,4 +1,6 @@
 [workspace]
+resolver = "2"
+default-members = ["day1"]
 
 members = [
     "day1",
