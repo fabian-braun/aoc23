@@ -8,30 +8,44 @@ use maplit::hashmap;
 type GameId = usize;
 
 fn main() {
-    let game_id_sum: usize = read_to_string("example_day2")
+    // part I
+    let game_id_sum: usize = read_to_string("input_day2")
         .unwrap()
         .lines()
         .map(String::from)
         .filter_map(|s| {
             let (id, draws) = split_line(s);
             let possible = draws_possible(&draws);
-            println!("Game {}: {} {:?}", id, possible, draws);
             possible.then_some(id)
         })
         .sum();
     println!("Hello, world! The sum of Game IDs is {}", game_id_sum);
+    // part II
+    let power_sum: usize = read_to_string("input_day2")
+        .unwrap()
+        .lines()
+        .map(String::from)
+        .map(|s| {
+            let (id, draws) = split_line(s);
+            let hull = draws_hull(&draws);
+            let power = hull.power();
+            println!("Game {}, power {}, hull {:?}", id, power, hull);
+            power
+        })
+        .sum();
+    println!("The power of all games is {}", power_sum);
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 struct Draw {
     red: usize,
     green: usize,
     blue: usize,
 }
 
-impl Display for Draw {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "r{},g{},b{}", self.red, self.green, self.blue)
+impl Draw {
+    fn power(&self) -> usize {
+        self.red * self.green * self.blue
     }
 }
 
@@ -42,6 +56,18 @@ fn draws_possible(draws: &[Draw]) -> bool {
             draw.blue < 15
     })
 }
+
+
+fn draws_hull(draws: &[Draw]) -> Draw {
+    draws.iter().fold(Draw::default(), |acc, x| {
+        Draw {
+            red: acc.red.max(x.red),
+            green: acc.green.max(x.green),
+            blue: acc.blue.max(x.blue),
+        }
+    })
+}
+
 
 fn split_line(line: String) -> (GameId, Vec<Draw>) {
     let (game_id, game) = line.split_once(':').unwrap();
