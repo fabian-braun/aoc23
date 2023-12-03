@@ -5,6 +5,7 @@ default-members = ["day1"]
 members = [
     "day1",
     "day2",
+    "day3",
 ]
 
 [workspace.package]

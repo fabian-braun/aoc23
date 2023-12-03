@@ -1,0 +1,9 @@
+[package]
+name = "day3"
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+itertools = { workspace = true, features = [] }
+maplit = { workspace = true, features = [] }
+bit-matrix = "0.6.1"
