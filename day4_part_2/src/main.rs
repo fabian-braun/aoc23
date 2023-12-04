@@ -12,7 +12,6 @@ fn main() {
     let mut card_counts = vec![1usize; initial_card_count];
     file_context.lines().enumerate()
         .for_each(|(idx, line)| {
-            println!("{:?}",card_counts);
             let multiplier = card_counts[idx];
             let (_, line) = line.split_once(": ").unwrap();
             let (winning, draw) = line.split_once(" | ").unwrap();
