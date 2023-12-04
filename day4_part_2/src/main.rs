@@ -25,7 +25,7 @@ fn main() {
             }
         });
     let sum: usize = card_counts.iter().sum();
-    println!("Part I: The sum is {}", sum);
+    println!("Part II: The sum is {}", sum);
 }
 
 #[cfg(test)]
