@@ -24,7 +24,6 @@ fn main() {
         }).sum();
 
     println!("Part I: The sum is {}", sum);
-    println!("Part II: The sum is {}", 3);
 }
 
 #[cfg(test)]
