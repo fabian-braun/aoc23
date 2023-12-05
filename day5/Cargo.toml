@@ -1,0 +1,9 @@
+[package]
+name = "day5"
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+itertools = { workspace = true, features = [] }
+maplit = { workspace = true, features = [] }
+sorted-vec = "0.8.3"
