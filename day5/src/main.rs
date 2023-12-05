@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::fs::read_to_string;
 use std::str::FromStr;
@@ -46,12 +47,17 @@ struct Mapping {
 
 impl Mapping {
     pub fn lookup_src(&self, src: i64) -> i64 {
-        for mapping in self.mappings.iter() {
+        let idx = self.mappings.binary_search_by(|mapping| {
             if src >= mapping.start_incl && src < mapping.end_excl {
-                return src + mapping.offset;
-            }
+                Ordering::Equal
+            } else if src < mapping.start_incl {
+                Ordering::Greater
+            } else { Ordering::Less }
+        });
+        match idx {
+            Ok(idx) => { src + self.mappings[idx].offset }
+            Err(_) => { src }
         }
-        src
     }
 }
 
