@@ -8,7 +8,13 @@ fn main() {
         Race { time: 91, record: 1291 },
         Race { time: 89, record: 1467 },
     ];
-    println!("{}", races.iter().map(|m| m.record_beating_ways()).product::<usize>())
+    let big_race = Race {
+        time: 42899189,
+        record: 308117012911467,
+    };
+
+    println!("Part I: {}", races.iter().map(|m| m.record_beating_ways()).product::<usize>());
+    println!("Part II: {}", big_race.record_beating_ways());
 }
 
 struct Race {
@@ -57,8 +63,13 @@ mod tests {
             time: 30,
             record: 200,
         };
+        let race4 = Race {
+            time: 71530,
+            record: 940200,
+        };
         assert_eq!(4, race1.record_beating_ways(), "race 1 failed");
         assert_eq!(8, race2.record_beating_ways(), "race 2 failed");
         assert_eq!(9, race3.record_beating_ways(), "race 3 failed");
+        assert_eq!(71503, race4.record_beating_ways(), "race 4 failed");
     }
 }
