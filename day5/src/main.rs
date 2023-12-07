@@ -25,13 +25,13 @@ fn main() {
     println!("mappings initialized");
 
     let min_loc = seeds.map(|seed| {
-        let tmp = mapping[&("seed".to_string(), "soil".to_string())].lookup_src(seed);
-        let tmp = mapping[&("soil".to_string(), "fertilizer".to_string())].lookup_src(tmp);
-        let tmp = mapping[&("fertilizer".to_string(), "water".to_string())].lookup_src(tmp);
-        let tmp = mapping[&("water".to_string(), "light".to_string())].lookup_src(tmp);
-        let tmp = mapping[&("light".to_string(), "temperature".to_string())].lookup_src(tmp);
-        let tmp = mapping[&("temperature".to_string(), "humidity".to_string())].lookup_src(tmp);
-        let location = mapping[&("humidity".to_string(), "location".to_string())].lookup_src(tmp);
+        let tmp = mapping[&("seed".to_string(), "soil".to_string())].to_dst(seed);
+        let tmp = mapping[&("soil".to_string(), "fertilizer".to_string())].to_dst(tmp);
+        let tmp = mapping[&("fertilizer".to_string(), "water".to_string())].to_dst(tmp);
+        let tmp = mapping[&("water".to_string(), "light".to_string())].to_dst(tmp);
+        let tmp = mapping[&("light".to_string(), "temperature".to_string())].to_dst(tmp);
+        let tmp = mapping[&("temperature".to_string(), "humidity".to_string())].to_dst(tmp);
+        let location = mapping[&("humidity".to_string(), "location".to_string())].to_dst(tmp);
         location
     }).min().unwrap();
 
@@ -46,7 +46,7 @@ struct Mapping {
 }
 
 impl Mapping {
-    pub fn lookup_src(&self, src: i64) -> i64 {
+    pub fn to_dst(&self, src: i64) -> i64 {
         let idx = self.mappings.binary_search_by(|mapping| {
             if src >= mapping.start_incl && src < mapping.end_excl {
                 Ordering::Equal
@@ -57,6 +57,19 @@ impl Mapping {
         match idx {
             Ok(idx) => { src + self.mappings[idx].offset }
             Err(_) => { src }
+        }
+    }
+    pub fn to_src(&self, dst: i64) -> i64 {
+        let idx = self.mappings.binary_search_by(|mapping| {
+            if dst >= mapping.start_incl + mapping.offset && dst < mapping.end_excl + mapping.offset {
+                Ordering::Equal
+            } else if dst < mapping.start_incl + mapping.offset {
+                Ordering::Greater
+            } else { Ordering::Less }
+        });
+        match idx {
+            Ok(idx) => { dst - self.mappings[idx].offset }
+            Err(_) => { dst }
         }
     }
 }
@@ -113,9 +126,9 @@ mod tests {
         };
         let actual = str_to_mapping(input);
         assert_eq!(expected, actual);
-        assert_eq!(50, actual.lookup_src(98));
-        assert_eq!(51, actual.lookup_src(99));
-        assert_eq!(55, actual.lookup_src(53));
-        assert_eq!(10, actual.lookup_src(10));
+        assert_eq!(50, actual.to_dst(98));
+        assert_eq!(51, actual.to_dst(99));
+        assert_eq!(55, actual.to_dst(53));
+        assert_eq!(10, actual.to_dst(10));
     }
 }
