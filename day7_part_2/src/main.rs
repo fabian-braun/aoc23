@@ -3,7 +3,7 @@ use std::str::FromStr;
 use itertools::Itertools;
 
 fn main() {
-    let file_context = read_to_string("example_day7").unwrap();
+    let file_context = read_to_string("input_day7").unwrap();
     let count: usize = file_context.lines()
         .map(|line| HandBid::from_str(line).unwrap())
         .sorted()
@@ -28,15 +28,52 @@ struct Hand {
 
 impl Hand {
     fn new(hand: [Label; 5]) -> Self {
-        let counts = hand.iter().counts();
-        let typ = if counts.len() == 5 {
-            Typ::HighCard
-        } else if counts.len() == 4 {
-            Typ::OnePair
-        } else if counts.len() == 3 {
-            if *counts.values().max().unwrap() == 3usize { Typ::ThreeOfKind } else { Typ::TwoPair }
-        } else if counts.len() == 2 {
-            if *counts.values().max().unwrap() == 4usize { Typ::FourOfKind } else { Typ::FullHouse }
+        let mut counts = hand.iter().counts();
+        let jokers = counts.remove(&Label::J).unwrap_or(0usize);
+        let typ = if jokers == 0 {
+            if counts.len() == 5 {
+                Typ::HighCard
+            } else if counts.len() == 4 {
+                Typ::OnePair
+            } else if counts.len() == 3 {
+                if *counts.values().max().unwrap() == 3usize { Typ::ThreeOfKind } else { Typ::TwoPair }
+            } else if counts.len() == 2 {
+                if *counts.values().max().unwrap() == 4usize { Typ::FourOfKind } else { Typ::FullHouse }
+            } else {
+                Typ::FiveOfKind
+            }
+        } else if jokers == 1 {
+            if counts.len() == 4 {
+                // (1,1,1,1) + 1J
+                Typ::OnePair
+            } else if counts.len() == 3 {
+                // (2,1,1,0) + 1J
+                Typ::ThreeOfKind
+            } else if counts.len() == 2 {
+                // (2,2,0,0) | (3,1,0,0) + 1J
+                if *counts.values().next().unwrap() == 2usize { Typ::FullHouse } else { Typ::FourOfKind }
+            } else {
+                Typ::FiveOfKind
+            }
+        } else if jokers == 2 {
+            if counts.len() == 3 {
+                // (1,1,1) + 2J
+                Typ::ThreeOfKind
+            } else if counts.len() == 2 {
+                // (2,1,0) + 2J
+                Typ::FourOfKind
+            } else {
+                // (3,0,0) + 2J
+                Typ::FiveOfKind
+            }
+        } else if jokers == 3 {
+            if counts.len() == 2 {
+                // (1,1) + 3J
+                Typ::FourOfKind
+            } else {
+                // (2,0) + 3J
+                Typ::FiveOfKind
+            }
         } else {
             Typ::FiveOfKind
         };
@@ -86,6 +123,7 @@ enum Typ {
 #[derive(Debug, PartialEq, Eq, Ord, PartialOrd, Clone, Copy, Hash)]
 enum Label {
     // ascending order for deriving Ord
+    J,
     L2,
     L3,
     L4,
@@ -95,7 +133,6 @@ enum Label {
     L8,
     L9,
     T,
-    J,
     Q,
     K,
     A,
