@@ -24,14 +24,22 @@ fn main() {
 
     println!("mappings initialized");
 
+    let seed_to_soil = &mapping[&("seed".to_string(), "soil".to_string())];
+    let soil_to_fertilizer = &mapping[&("soil".to_string(), "fertilizer".to_string())];
+    let fertilizer_to_water = &mapping[&("fertilizer".to_string(), "water".to_string())];
+    let water_to_light = &mapping[&("water".to_string(), "light".to_string())];
+    let light_to_temperature = &mapping[&("light".to_string(), "temperature".to_string())];
+    let temperature_to_humidity = &mapping[&("temperature".to_string(), "humidity".to_string())];
+    let humidity_to_location = &mapping[&("humidity".to_string(), "location".to_string())];
+
     let min_loc = seeds.map(|seed| {
-        let tmp = mapping[&("seed".to_string(), "soil".to_string())].to_dst(seed);
-        let tmp = mapping[&("soil".to_string(), "fertilizer".to_string())].to_dst(tmp);
-        let tmp = mapping[&("fertilizer".to_string(), "water".to_string())].to_dst(tmp);
-        let tmp = mapping[&("water".to_string(), "light".to_string())].to_dst(tmp);
-        let tmp = mapping[&("light".to_string(), "temperature".to_string())].to_dst(tmp);
-        let tmp = mapping[&("temperature".to_string(), "humidity".to_string())].to_dst(tmp);
-        let location = mapping[&("humidity".to_string(), "location".to_string())].to_dst(tmp);
+        let tmp =      seed_to_soil.to_dst(seed);
+        let tmp =      soil_to_fertilizer.to_dst(tmp);
+        let tmp =      fertilizer_to_water.to_dst(tmp);
+        let tmp =      water_to_light.to_dst(tmp);
+        let tmp =      light_to_temperature.to_dst(tmp);
+        let tmp =      temperature_to_humidity.to_dst(tmp);
+        let location = humidity_to_location.to_dst(tmp);
         location
     }).min().unwrap();
 
