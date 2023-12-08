@@ -110,6 +110,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "day8_part_2"
+version = "0.1.0"
+dependencies = [
+ "itertools",
+ "maplit",
+]
+
+[[package]]
 name = "dayX"
 version = "0.1.0"
 dependencies = [
