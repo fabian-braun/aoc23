@@ -1,0 +1,8 @@
+[package]
+name = "day8"
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+itertools = { workspace = true, features = [] }
+maplit = { workspace = true, features = [] }
