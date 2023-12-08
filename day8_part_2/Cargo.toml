@@ -4,5 +4,6 @@ edition.workspace = true
 version.workspace = true
 
 [dependencies]
+bitvec = "1.0.1"
 itertools = { workspace = true, features = [] }
 maplit = { workspace = true, features = [] }
