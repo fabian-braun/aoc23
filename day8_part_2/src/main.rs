@@ -4,7 +4,7 @@ use itertools::Itertools;
 use bitvec::prelude::*;
 
 fn main() {
-    let file_context = read_to_string("example_day8_part2").unwrap();
+    let file_context = read_to_string("input_day8").unwrap();
     let policy = file_context.lines().next().unwrap().chars().map(|c| {
         match c {
             'L' => { true }
@@ -23,13 +23,13 @@ fn main() {
                 idx_to_str.push(src.to_string());
             }
         });
-    let mut current: BitVec<usize, Lsb0> = BitVec::new();
+    let mut start: BitVec<usize, Lsb0> = BitVec::new();
     let mut terminal: BitVec<usize, Lsb0> = BitVec::new();
     let mut left_of: Vec<usize> = Vec::new();
     let mut right_of: Vec<usize> = Vec::new();
     idx_to_str.iter().enumerate().for_each(|(idx, s)| {
-        current.push(s.ends_with('A'));
-        terminal.push(!s.ends_with('Z'));
+        start.push(s.ends_with('A'));
+        terminal.push(s.ends_with('Z'));
         left_of.push(idx);
         right_of.push(idx);
     });
@@ -44,28 +44,24 @@ fn main() {
             left_of[src] = left;
             right_of[src] = right;
         });
-    let mut policy_index = 0usize;
-    let mut steps = 0usize;
-    println!("terminal {}", terminal);
-    println!("current  {}", current);
-    while !(current.clone() | &terminal).all() {
-        let idxs = current.iter_ones().collect_vec();
-        if policy[policy_index] {
-            //left
-            for idx in idxs {
-                current.swap(idx, left_of[idx])
-            }
-        } else {
-            //right
-            for idx in idxs {
-                current.swap(idx, right_of[idx])
-            }
-        };
-        policy_index += 1;
-        policy_index %= policy.len();
-        steps += 1;
-        println!("current  {}", current);
-    }
+
+    let steps = start.iter_ones().map(|mut current| {
+        // find out for each index how many steps it needs to terminate, then find the lowest common multiple of all of them.
+        let mut policy_index = 0usize;
+        let mut steps = 0usize;
+        while !terminal[current] {
+            if policy[policy_index] {
+                current = left_of[current];
+            } else {
+                current = right_of[current];
+            };
+            policy_index += 1;
+            policy_index %= policy.len();
+            steps += 1;
+        }
+        steps
+    }).fold(1, num::integer::lcm);
+
 
     println!("Part II solution: {}", steps);
 }

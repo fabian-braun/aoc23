@@ -7,3 +7,4 @@ version.workspace = true
 bitvec = "1.0.1"
 itertools = { workspace = true, features = [] }
 maplit = { workspace = true, features = [] }
+num = "0.4.1"
