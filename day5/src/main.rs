@@ -1,5 +1,6 @@
 use std::cmp::Ordering;
 use std::collections::HashMap;
+use std::fmt::{Display, Write};
 use std::fs::read_to_string;
 use std::str::FromStr;
 
@@ -51,6 +52,20 @@ struct Mapping {
     src: String,
     dst: String,
     mappings: SortedVec<IndexMapping>,
+}
+
+impl Display for Mapping {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&format!("{} -> {}\n", self.src, self.dst))?;
+        self.mappings.iter().try_for_each(|m| {
+            f.write_str(&format!("{:03}..{:03} ", m.start_incl, m.end_excl))
+        })?;
+        f.write_str("\n")?;
+        self.mappings.iter().try_for_each(|m| {
+            f.write_str(&format!("{:03}..{:03} ", m.start_incl + m.offset, m.end_excl + m.offset))
+        })?;
+        Ok(())
+    }
 }
 
 impl Mapping {
