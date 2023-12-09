@@ -1,0 +1,55 @@
+use std::fs::{File, read_to_string};
+use std::io;
+
+pub async fn get_example(day: usize) -> String {
+    let file_name = example_file_name(day);
+    if File::open(&file_name).is_err() {
+        download_example(day).await;
+    }
+    read_to_string(file_name).unwrap()
+}
+
+pub async fn get_input(day: usize) -> String {
+    let file_name = input_file_name(day);
+    if File::open(&file_name).is_err() {
+        download_input(day).await;
+    }
+    read_to_string(file_name).unwrap()
+}
+
+fn input_file_name(day: usize) -> String {
+    format!("input_day{day}")
+}
+
+fn example_file_name(day: usize) -> String {
+    format!("example_day{day}")
+}
+
+async fn download_example(day: usize) {
+    let resp = reqwest::get(format!("https://adventofcode.com/2023/day/{day}")).await.expect("request failed");
+    let body = resp.text().await.expect("body invalid");
+    let mut example = "".to_string();
+    let mut example_started = false;
+    for line in body.lines() {
+        if let Some(first_line) = line.strip_prefix("<pre><code>") {
+            example_started = true;
+            example.push_str(first_line);
+            example.push_str("\n");
+        } else if let Some(last_line) = line.strip_suffix("</code></pre>") {
+            example.push_str(last_line);
+            break;
+        } else if example_started {
+            example.push_str(line);
+            example.push_str("\n");
+        }
+    }
+    let mut out = File::create(example_file_name(day)).expect("failed to create file");
+    io::copy(&mut example.as_bytes(), &mut out).expect("failed to write file");
+}
+
+async fn download_input(day: usize) {
+    let resp = reqwest::get(format!("https://adventofcode.com/2023/day/{day}/input")).await.expect("request failed");
+    let body = resp.text().await.expect("body invalid");
+    let mut out = File::create(input_file_name(day)).expect("failed to create file");
+    io::copy(&mut body.as_bytes(), &mut out).expect("failed to write file");
+}

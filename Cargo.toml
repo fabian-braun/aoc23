@@ -17,6 +17,7 @@ members = [
     "day8_part_2",
     "day9",
     "dayX",
+    "utilities",
 ]
 
 [workspace.package]
@@ -26,3 +27,5 @@ version = "0.1.0"
 [workspace.dependencies]
 itertools = "0.12.0"
 maplit = "1.0.2"
+reqwest = "0.11"
+tokio = "1"

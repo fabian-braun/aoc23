@@ -6,3 +6,4 @@ version.workspace = true
 [dependencies]
 itertools = { workspace = true, features = [] }
 maplit = { workspace = true, features = [] }
+reqwest = "0.11.22"
