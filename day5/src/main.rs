@@ -35,20 +35,27 @@ fn main() {
 
     let min_loc = seeds.into_iter().map(|(range_start_incl, range_end_excl)| {
         let tmp = seed_to_soil.to_dst_ranges(range_start_incl, range_end_excl);
+        // println!("IN  [({}..{})]", range_start_incl, range_end_excl);
+        // println!("OUT {:?}", tmp);
         let tmp = tmp.into_iter().flat_map(|(range_start_incl, range_end_excl)| soil_to_fertilizer.to_dst_ranges(range_start_incl, range_end_excl)).collect_vec();
+        // println!("OUT {:?}", tmp);
         let tmp = tmp.into_iter().flat_map(|(range_start_incl, range_end_excl)| fertilizer_to_water.to_dst_ranges(range_start_incl, range_end_excl)).collect_vec();
+        // println!("OUT {:?}", tmp);
         let tmp = tmp.into_iter().flat_map(|(range_start_incl, range_end_excl)| water_to_light.to_dst_ranges(range_start_incl, range_end_excl)).collect_vec();
+        // println!("OUT {:?}", tmp);
         let tmp = tmp.into_iter().flat_map(|(range_start_incl, range_end_excl)| light_to_temperature.to_dst_ranges(range_start_incl, range_end_excl)).collect_vec();
+        // println!("OUT {:?}", tmp);
         let tmp = tmp.into_iter().flat_map(|(range_start_incl, range_end_excl)| temperature_to_humidity.to_dst_ranges(range_start_incl, range_end_excl)).collect_vec();
+        // println!("OUT {:?}", tmp);
         let tmp = tmp.into_iter().flat_map(|(range_start_incl, range_end_excl)| humidity_to_location.to_dst_ranges(range_start_incl, range_end_excl)).collect_vec();
+        // println!("OUT {:?}", tmp);
         let min = tmp.into_iter().map(|(range_start_incl, range_end_excl)| {
             range_start_incl.min(range_end_excl - 1)
         }).min();
-        println!("{:?}", min);
         min
     }).min().unwrap();
 
-    println!("Part I: The result is {min_loc:?}");
+    println!("Part II: The result is {min_loc:?}");
 }
 
 #[derive(PartialEq, Eq, Debug)]
@@ -62,11 +69,11 @@ impl Display for Mapping {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str(&format!("{} -> {}\n", self.src, self.dst))?;
         self.mappings.iter().try_for_each(|m| {
-            f.write_str(&format!("{:03}..{:03} ", m.start_incl, m.end_excl))
+            f.write_str(&format!("{:010}..{:010} ", m.start_incl, m.end_excl))
         })?;
         f.write_str("\n")?;
         self.mappings.iter().try_for_each(|m| {
-            f.write_str(&format!("{:03}..{:03} ", m.start_incl + m.offset, m.end_excl + m.offset))
+            f.write_str(&format!("{:010}..{:010} ", m.start_incl + m.offset, m.end_excl + m.offset))
         })?;
         Ok(())
     }
@@ -95,7 +102,9 @@ impl Mapping {
     }
 
     pub fn to_dst_ranges(&self, mut src_start_incl: i64, src_end_excl: i64) -> Vec<(i64, i64)> {
+        let range_len = src_start_incl.abs_diff(src_end_excl);
         let mut ranges: Vec<(i64, i64)> = vec![];
+        assert!(src_start_incl < src_end_excl);
         while src_start_incl < src_end_excl {
             match self.find_mapping(src_start_incl) {
                 Ok(m) => {
@@ -112,8 +121,13 @@ impl Mapping {
                 Err(nm) => {
                     match nm {
                         Some(nm) => {
-                            ranges.push((src_start_incl, nm.start_incl));
-                            src_start_incl = nm.start_incl;
+                            if src_end_excl <= nm.start_incl {
+                                ranges.push((src_start_incl, src_end_excl));
+                                src_start_incl = src_end_excl;
+                            } else {
+                                ranges.push((src_start_incl, nm.start_incl));
+                                src_start_incl = nm.start_incl;
+                            }
                         }
                         None => {
                             ranges.push((src_start_incl, src_end_excl));
@@ -123,6 +137,10 @@ impl Mapping {
                 }
             };
         };
+        let mapped_range_len: u64 = ranges.iter().map(|(l, u)| {
+            u.abs_diff(*l)
+        }).sum();
+        assert_eq!(range_len, mapped_range_len);
         ranges
     }
 }
@@ -183,6 +201,6 @@ mod tests {
         assert_eq!(51, actual.to_dst(99));
         assert_eq!(55, actual.to_dst(53));
         assert_eq!(10, actual.to_dst(10));
-        assert_eq!(vec![(10, 50), (52, 100), (50, 52)], actual.to_dst_ranges(10, 100));
+        assert_eq!(vec![(0, 50), (52, 100), (50, 52)], actual.to_dst_ranges(0, 100));
     }
 }
