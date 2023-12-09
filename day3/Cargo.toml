@@ -7,3 +7,5 @@ version.workspace = true
 itertools = { workspace = true, features = [] }
 maplit = { workspace = true, features = [] }
 bit-matrix = "0.6.1"
+utilities = { path = "../utilities" }
+tokio = { workspace = true, features = ["rt", "rt-multi-thread", "macros"] }

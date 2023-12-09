@@ -11,17 +11,14 @@ pub async fn get_example(day: usize) -> String {
 
 pub async fn get_input(day: usize) -> String {
     let file_name = input_file_name(day);
-    if File::open(&file_name).is_err() {
-        download_input(day).await;
-    }
     read_to_string(file_name).unwrap()
 }
 
 fn input_file_name(day: usize) -> String {
-    format!("data/input_day{day}")
+    format!("data/input_day{day}.txt")
 }
 
-fn example_file_name(day: usize) -> String { format!("data/example_day{day}") }
+fn example_file_name(day: usize) -> String { format!("data/example_day{day}.txt") }
 
 async fn download_example(day: usize) {
     _ = create_dir_all("data");

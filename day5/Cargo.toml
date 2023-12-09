@@ -7,3 +7,5 @@ version.workspace = true
 itertools = { workspace = true, features = [] }
 maplit = { workspace = true, features = [] }
 sorted-vec = "0.8.3"
+utilities = { path = "../utilities" }
+tokio = { workspace = true, features = ["rt", "rt-multi-thread", "macros"] }

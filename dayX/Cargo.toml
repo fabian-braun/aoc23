@@ -7,5 +7,5 @@ version.workspace = true
 itertools = { workspace = true, features = [] }
 maplit = { workspace = true, features = [] }
 reqwest = { workspace = true, features = ["default-tls"] }
-tokio = { workspace = true, features = ["rt", "rt-multi-thread", "macros"] }
 utilities = { path = "../utilities" }
+tokio = { workspace = true, features = ["rt", "rt-multi-thread", "macros"] }

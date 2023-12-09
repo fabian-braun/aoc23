@@ -132,6 +132,8 @@ version = "0.1.0"
 dependencies = [
  "itertools",
  "maplit",
+ "tokio",
+ "utilities",
 ]
 
 [[package]]
@@ -140,6 +142,8 @@ version = "0.1.0"
 dependencies = [
  "itertools",
  "maplit",
+ "tokio",
+ "utilities",
 ]
 
 [[package]]
@@ -149,6 +153,8 @@ dependencies = [
  "bit-matrix",
  "itertools",
  "maplit",
+ "tokio",
+ "utilities",
 ]
 
 [[package]]
@@ -159,6 +165,8 @@ dependencies = [
  "itertools",
  "maplit",
  "petgraph",
+ "tokio",
+ "utilities",
 ]
 
 [[package]]
@@ -167,6 +175,8 @@ version = "0.1.0"
 dependencies = [
  "itertools",
  "maplit",
+ "tokio",
+ "utilities",
 ]
 
 [[package]]
@@ -175,6 +185,8 @@ version = "0.1.0"
 dependencies = [
  "itertools",
  "maplit",
+ "tokio",
+ "utilities",
 ]
 
 [[package]]
@@ -184,6 +196,8 @@ dependencies = [
  "itertools",
  "maplit",
  "sorted-vec",
+ "tokio",
+ "utilities",
 ]
 
 [[package]]
@@ -193,6 +207,8 @@ dependencies = [
  "itertools",
  "maplit",
  "reqwest",
+ "tokio",
+ "utilities",
 ]
 
 [[package]]
@@ -201,6 +217,8 @@ version = "0.1.0"
 dependencies = [
  "itertools",
  "maplit",
+ "tokio",
+ "utilities",
 ]
 
 [[package]]
@@ -209,6 +227,8 @@ version = "0.1.0"
 dependencies = [
  "itertools",
  "maplit",
+ "tokio",
+ "utilities",
 ]
 
 [[package]]
@@ -217,6 +237,8 @@ version = "0.1.0"
 dependencies = [
  "itertools",
  "maplit",
+ "tokio",
+ "utilities",
 ]
 
 [[package]]
@@ -227,6 +249,8 @@ dependencies = [
  "itertools",
  "maplit",
  "num",
+ "tokio",
+ "utilities",
 ]
 
 [[package]]
@@ -235,6 +259,8 @@ version = "0.1.0"
 dependencies = [
  "itertools",
  "maplit",
+ "tokio",
+ "utilities",
 ]
 
 [[package]]

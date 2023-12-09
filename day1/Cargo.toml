@@ -6,3 +6,5 @@ version.workspace = true
 [dependencies]
 itertools = { workspace = true, features = [] }
 maplit = { workspace = true, features = [] }
+utilities = { path = "../utilities" }
+tokio = { version = "1.0.0", features = ["rt", "rt-multi-thread", "macros"] }

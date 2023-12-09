@@ -1,9 +1,11 @@
-use std::fs::read_to_string;
+use std::io::BufRead;
 use std::str::FromStr;
 use itertools::Itertools;
 use maplit::hashmap;
+use utilities::get_input;
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let numbers = hashmap! {
         "0" => "0",
         "1" => "1",
@@ -27,10 +29,8 @@ fn main() {
         "nine" => "9",
     };
     let patterns = numbers.keys().cloned().collect_vec();
-    let calibration_value_sum: usize = read_to_string("input_day1")
-        .unwrap()
+    let calibration_value_sum: usize = get_input(1).await
         .lines()
-        .map(String::from)
         .map(|s| {
             let first = find_pattern(&patterns, &s, false);
             let last = find_pattern(&patterns, &s, true);
