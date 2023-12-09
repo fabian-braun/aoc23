@@ -5,7 +5,7 @@ use std::str::FromStr;
 use itertools::Itertools;
 
 fn main() {
-    let file_context = read_to_string("example_day9").unwrap();
+    let file_context = read_to_string("input_day9").unwrap();
     let result: i64 = file_context.lines()
         .map(|line| {
             let seq = line.split(' ').map(|num_str| i64::from_str(num_str).unwrap()).collect_vec();
