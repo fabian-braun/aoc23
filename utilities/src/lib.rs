@@ -42,11 +42,3 @@ async fn download_example(day: usize) {
     let mut out = File::create(example_file_name(day)).expect("failed to create file");
     io::copy(&mut example.as_bytes(), &mut out).expect("failed to write file");
 }
-
-async fn download_input(day: usize) {
-    _ = create_dir_all("data");
-    let resp = reqwest::get(format!("https://adventofcode.com/2023/day/{day}/input")).await.expect("request failed");
-    let body = resp.text().await.expect("body invalid");
-    let mut out = File::create(input_file_name(day)).expect("failed to create file");
-    io::copy(&mut body.as_bytes(), &mut out).expect("failed to write file");
-}
