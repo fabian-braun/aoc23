@@ -17,6 +17,7 @@ members = [
     "day8_part_2",
     "day9",
     "day10",
+    "day13",
     "day_x",
     "utilities",
 ]
