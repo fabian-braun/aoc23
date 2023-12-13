@@ -28,8 +28,8 @@ async fn main() {
 // prev, curr, next
 fn next_y_x(curr_c: char, (prev_y, prev_x): (i64, i64)) -> (i64, i64) {
     match curr_c {
-        '|' => {}
-        _ => {}
+        '|' => { (0, 0) }
+        _ => { (0, 0) }
     }
 }
 
