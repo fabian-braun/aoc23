@@ -1,4 +1,4 @@
-use ndarray::{Array2, Axis};
+use ndarray::{Array2, Axis, s};
 
 #[tokio::main]
 async fn main() {
@@ -33,15 +33,21 @@ fn find_reflection_rows(pattern: Array2<bool>) -> usize {
         let orig_y_start = reflection_index + 1 - elems_per_reflection;
         let mut y_start = orig_y_start;
         let mut y_end = y_start + elems_per_reflection + elems_per_reflection - 1;
+        let mut total_diff = 0;
         while y_start < y_end {
-            if pattern.row(y_start) != pattern.row(y_end) {
+            let diff = &pattern.slice(s![y_start..=y_start, ..]) ^ &pattern.slice(s![y_end..=y_end, ..]);
+            let diff = diff.iter().map(|b: &bool| b.then(|| 1).unwrap_or_default()).sum::<usize>();
+            total_diff += diff;
+            if total_diff > 1 {
                 continue 'outer;
             }
             y_start += 1;
             y_end -= 1;
         }
-        let rows_above = elems_per_reflection + orig_y_start;
-        return rows_above;
+        if total_diff == 1 {
+            let rows_above = elems_per_reflection + orig_y_start;
+            return rows_above;
+        }
     }
     0
 }
