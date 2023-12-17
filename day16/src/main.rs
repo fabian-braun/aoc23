@@ -12,8 +12,6 @@ async fn main() {
     let y_len: usize = content.lines().count();
     let x_len: usize = content.lines().next().unwrap().len();
     let mut map = Array2::from_elem((y_len, x_len), '.');
-    let mut energized = Array2::from_elem((y_len, x_len), false);
-    let mut seen_states = HashSet::new();
     content.lines()
         .enumerate().for_each(|(y, line)| {
         line.chars().enumerate()
@@ -42,29 +40,31 @@ async fn main() {
             x: x_start as i64,
         });
         initial_beam_states.push(BeamState {
-            direction: LEFT,
+            direction: UP,
             y: (y_len - 1) as i64,
             x: x_start as i64,
         });
     }
-    let mut beam_state = vec![BeamState {
-        direction: RIGHT,
-        y: 0,
-        x: 0,
-    }];
-    while !beam_state.is_empty() {
-        beam_state.iter().for_each(|beam_state| {
-            seen_states.insert(beam_state.clone());
-        });
-        beam_state = beam_state.into_iter().flat_map(|beam_state: BeamState| {
-            let x = beam_state.x as usize;
-            let y = beam_state.y as usize;
-            energized[(y, x)] = true;
-            beam_state.transition(map[(y, x)], y_len, x_len)
-        }).filter(|beam_state: &BeamState| !seen_states.contains(&beam_state)).collect_vec();
-    }
-    let result: usize = energized.iter().filter(|x| **x).count();
 
+    let result: usize = initial_beam_states.into_iter().map(|beam_state: BeamState| {
+        let mut energized = Array2::from_elem((y_len, x_len), false);
+        let mut seen_states = HashSet::new();
+        let mut beam_state = vec![beam_state];
+        while !beam_state.is_empty() {
+            beam_state.iter().for_each(|beam_state| {
+                seen_states.insert(beam_state.clone());
+            });
+            beam_state = beam_state.into_iter().flat_map(|beam_state: BeamState| {
+                let x = beam_state.x as usize;
+                let y = beam_state.y as usize;
+                energized[(y, x)] = true;
+                beam_state.transition(map[(y, x)], y_len, x_len)
+            }).filter(|beam_state: &BeamState| !seen_states.contains(&beam_state)).collect_vec();
+        }
+        let result = energized.iter().filter(|x| **x).count();
+        println!("intermediate result: {}", result);
+        result
+    }).max().unwrap_or(0);
     println!("Part II solution: {}", result);
 }
 
