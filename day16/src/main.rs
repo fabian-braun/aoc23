@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use itertools::Itertools;
 use maplit::hashmap;
 use ndarray::Array2;
@@ -11,13 +12,8 @@ async fn main() {
     let y_len: usize = content.lines().count();
     let x_len: usize = content.lines().next().unwrap().len();
     let mut map = Array2::from_elem((y_len, x_len), '.');
-    let mut energized = hashmap! {
-        UP => Array2::from_elem((y_len, x_len), false),
-        DOWN => Array2::from_elem((y_len, x_len), false),
-        LEFT => Array2::from_elem((y_len, x_len), false),
-        RIGHT => Array2::from_elem((y_len, x_len), false),
-    };
-    let mut prev_energized = energized.clone();
+    let mut energized = Array2::from_elem((y_len, x_len), false);
+    let mut seen_states = HashSet::new();
     content.lines()
         .enumerate().for_each(|(y, line)| {
         line.chars().enumerate()
@@ -25,28 +21,51 @@ async fn main() {
                 map[(y, x)] = c;
             });
     });
+
+    let mut initial_beam_states = vec![];
+    for y_start in 0..y_len {
+        initial_beam_states.push(BeamState {
+            direction: RIGHT,
+            y: y_start as i64,
+            x: 0,
+        });
+        initial_beam_states.push(BeamState {
+            direction: LEFT,
+            y: y_start as i64,
+            x: (x_len - 1) as i64,
+        });
+    }
+    for x_start in 0..x_len {
+        initial_beam_states.push(BeamState {
+            direction: DOWN,
+            y: 0,
+            x: x_start as i64,
+        });
+        initial_beam_states.push(BeamState {
+            direction: LEFT,
+            y: (y_len - 1) as i64,
+            x: x_start as i64,
+        });
+    }
     let mut beam_state = vec![BeamState {
         direction: RIGHT,
         y: 0,
         x: 0,
     }];
-    let mut initial = true;
-    while energized.clone() != prev_energized.clone() || initial {
-        initial = false;
-        prev_energized = energized.clone();
+    while !beam_state.is_empty() {
+        beam_state.iter().for_each(|beam_state| {
+            seen_states.insert(beam_state.clone());
+        });
         beam_state = beam_state.into_iter().flat_map(|beam_state: BeamState| {
             let x = beam_state.x as usize;
             let y = beam_state.y as usize;
-            let direction = beam_state.direction;
-            energized.get_mut(&direction).unwrap()[(y, x)] = true;
+            energized[(y, x)] = true;
             beam_state.transition(map[(y, x)], y_len, x_len)
-        }).collect_vec();
+        }).filter(|beam_state: &BeamState| !seen_states.contains(&beam_state)).collect_vec();
     }
-    let result: usize = energized.values().fold(Array2::from_elem((y_len, x_len), false), |acc, x| {
-        &acc | x
-    }).iter().filter(|x| **x).count();
+    let result: usize = energized.iter().filter(|x| **x).count();
 
-    println!("Part I solution: {}", result);
+    println!("Part II solution: {}", result);
 }
 
 #[derive(Debug, Hash, Eq, PartialEq, Copy, Clone, Default)]
