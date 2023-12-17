@@ -10,18 +10,26 @@ use sorted_vec::SortedVec;
 fn main() {
     let input = read_to_string("input_day5").unwrap();
     let lines = input.split("\n\n").collect_vec();
-    let seeds = lines[0].split_whitespace().dropping(1).map(i64::from_str).filter_map(Result::ok).collect_vec();
-    let seeds = seeds.chunks_exact(2)
+    let seeds = lines[0]
+        .split_whitespace()
+        .dropping(1)
+        .map(i64::from_str)
+        .filter_map(Result::ok)
+        .collect_vec();
+    let seeds = seeds
+        .chunks_exact(2)
         .map(|chunk| {
             let start = chunk[0];
             let len = chunk[1];
             (start, start + len)
-        }).collect_vec();
-    let mapping: HashMap<(String, String), Mapping> = lines.iter().dropping(1).map(|l| {
-        str_to_mapping(l)
-    }).map(|m| {
-        ((m.src.clone(), m.dst.clone()), m)
-    }).collect();
+        })
+        .collect_vec();
+    let mapping: HashMap<(String, String), Mapping> = lines
+        .iter()
+        .dropping(1)
+        .map(|l| str_to_mapping(l))
+        .map(|m| ((m.src.clone(), m.dst.clone()), m))
+        .collect();
 
     println!("mappings initialized");
 
@@ -33,27 +41,62 @@ fn main() {
     let temperature_to_humidity = &mapping[&("temperature".to_string(), "humidity".to_string())];
     let humidity_to_location = &mapping[&("humidity".to_string(), "location".to_string())];
 
-    let min_loc = seeds.into_iter().map(|(range_start_incl, range_end_excl)| {
-        let tmp = seed_to_soil.to_dst_ranges(range_start_incl, range_end_excl);
-        // println!("IN  [({}..{})]", range_start_incl, range_end_excl);
-        // println!("OUT {:?}", tmp);
-        let tmp = tmp.into_iter().flat_map(|(range_start_incl, range_end_excl)| soil_to_fertilizer.to_dst_ranges(range_start_incl, range_end_excl)).collect_vec();
-        // println!("OUT {:?}", tmp);
-        let tmp = tmp.into_iter().flat_map(|(range_start_incl, range_end_excl)| fertilizer_to_water.to_dst_ranges(range_start_incl, range_end_excl)).collect_vec();
-        // println!("OUT {:?}", tmp);
-        let tmp = tmp.into_iter().flat_map(|(range_start_incl, range_end_excl)| water_to_light.to_dst_ranges(range_start_incl, range_end_excl)).collect_vec();
-        // println!("OUT {:?}", tmp);
-        let tmp = tmp.into_iter().flat_map(|(range_start_incl, range_end_excl)| light_to_temperature.to_dst_ranges(range_start_incl, range_end_excl)).collect_vec();
-        // println!("OUT {:?}", tmp);
-        let tmp = tmp.into_iter().flat_map(|(range_start_incl, range_end_excl)| temperature_to_humidity.to_dst_ranges(range_start_incl, range_end_excl)).collect_vec();
-        // println!("OUT {:?}", tmp);
-        let tmp = tmp.into_iter().flat_map(|(range_start_incl, range_end_excl)| humidity_to_location.to_dst_ranges(range_start_incl, range_end_excl)).collect_vec();
-        // println!("OUT {:?}", tmp);
-        let min = tmp.into_iter().map(|(range_start_incl, range_end_excl)| {
-            range_start_incl.min(range_end_excl - 1)
-        }).min();
-        min
-    }).min().unwrap();
+    let min_loc = seeds
+        .into_iter()
+        .map(|(range_start_incl, range_end_excl)| {
+            let tmp = seed_to_soil.to_dst_ranges(range_start_incl, range_end_excl);
+            // println!("IN  [({}..{})]", range_start_incl, range_end_excl);
+            // println!("OUT {:?}", tmp);
+            let tmp = tmp
+                .into_iter()
+                .flat_map(|(range_start_incl, range_end_excl)| {
+                    soil_to_fertilizer.to_dst_ranges(range_start_incl, range_end_excl)
+                })
+                .collect_vec();
+            // println!("OUT {:?}", tmp);
+            let tmp = tmp
+                .into_iter()
+                .flat_map(|(range_start_incl, range_end_excl)| {
+                    fertilizer_to_water.to_dst_ranges(range_start_incl, range_end_excl)
+                })
+                .collect_vec();
+            // println!("OUT {:?}", tmp);
+            let tmp = tmp
+                .into_iter()
+                .flat_map(|(range_start_incl, range_end_excl)| {
+                    water_to_light.to_dst_ranges(range_start_incl, range_end_excl)
+                })
+                .collect_vec();
+            // println!("OUT {:?}", tmp);
+            let tmp = tmp
+                .into_iter()
+                .flat_map(|(range_start_incl, range_end_excl)| {
+                    light_to_temperature.to_dst_ranges(range_start_incl, range_end_excl)
+                })
+                .collect_vec();
+            // println!("OUT {:?}", tmp);
+            let tmp = tmp
+                .into_iter()
+                .flat_map(|(range_start_incl, range_end_excl)| {
+                    temperature_to_humidity.to_dst_ranges(range_start_incl, range_end_excl)
+                })
+                .collect_vec();
+            // println!("OUT {:?}", tmp);
+            let tmp = tmp
+                .into_iter()
+                .flat_map(|(range_start_incl, range_end_excl)| {
+                    humidity_to_location.to_dst_ranges(range_start_incl, range_end_excl)
+                })
+                .collect_vec();
+            // println!("OUT {:?}", tmp);
+            let min = tmp
+                .into_iter()
+                .map(|(range_start_incl, range_end_excl)| range_start_incl.min(range_end_excl - 1))
+                .min();
+            min
+        })
+        .min()
+        .unwrap();
 
     println!("Part II: The result is {min_loc:?}");
 }
@@ -68,12 +111,16 @@ struct Mapping {
 impl Display for Mapping {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str(&format!("{} -> {}\n", self.src, self.dst))?;
-        self.mappings.iter().try_for_each(|m| {
-            f.write_str(&format!("{:010}..{:010} ", m.start_incl, m.end_excl))
-        })?;
+        self.mappings
+            .iter()
+            .try_for_each(|m| f.write_str(&format!("{:010}..{:010} ", m.start_incl, m.end_excl)))?;
         f.write_str("\n")?;
         self.mappings.iter().try_for_each(|m| {
-            f.write_str(&format!("{:010}..{:010} ", m.start_incl + m.offset, m.end_excl + m.offset))
+            f.write_str(&format!(
+                "{:010}..{:010} ",
+                m.start_incl + m.offset,
+                m.end_excl + m.offset
+            ))
         })?;
         Ok(())
     }
@@ -82,8 +129,8 @@ impl Display for Mapping {
 impl Mapping {
     pub fn to_dst(&self, src: i64) -> i64 {
         match self.find_mapping(src) {
-            Ok(m) => { src + m.offset }
-            Err(_) => { src }
+            Ok(m) => src + m.offset,
+            Err(_) => src,
         }
     }
 
@@ -93,11 +140,13 @@ impl Mapping {
                 Ordering::Equal
             } else if src < mapping.start_incl {
                 Ordering::Greater
-            } else { Ordering::Less }
+            } else {
+                Ordering::Less
+            }
         });
         match idx {
-            Ok(idx) => { Ok(self.mappings[idx]) }
-            Err(idx) => { Err(self.mappings.get(idx).copied()) }
+            Ok(idx) => Ok(self.mappings[idx]),
+            Err(idx) => Err(self.mappings.get(idx).copied()),
         }
     }
 
@@ -136,10 +185,8 @@ impl Mapping {
                     }
                 }
             };
-        };
-        let mapped_range_len: u64 = ranges.iter().map(|(l, u)| {
-            u.abs_diff(*l)
-        }).sum();
+        }
+        let mapped_range_len: u64 = ranges.iter().map(|(l, u)| u.abs_diff(*l)).sum();
         assert_eq!(range_len, mapped_range_len);
         ranges
     }
@@ -157,17 +204,26 @@ fn str_to_mapping(s: &str) -> Mapping {
     // seed-to-soil map:\n50 98 2\n52 50 48
     let (map_type, numbers) = s.split_once(" map:\n").unwrap();
     let (src, dst) = map_type.split_once("-to-").unwrap();
-    let mappings: SortedVec<IndexMapping> = numbers.split('\n').map(|r| {
-        let (dst, src, len) = r.split_whitespace().map(i64::from_str).filter_map(Result::ok).collect_tuple().unwrap();
-        let offset = dst - src;
-        let start_incl = src;
-        let end_excl = src + len;
-        IndexMapping {
-            start_incl,
-            end_excl,
-            offset,
-        }
-    }).collect_vec().into();
+    let mappings: SortedVec<IndexMapping> = numbers
+        .split('\n')
+        .map(|r| {
+            let (dst, src, len) = r
+                .split_whitespace()
+                .map(i64::from_str)
+                .filter_map(Result::ok)
+                .collect_tuple()
+                .unwrap();
+            let offset = dst - src;
+            let start_incl = src;
+            let end_excl = src + len;
+            IndexMapping {
+                start_incl,
+                end_excl,
+                offset,
+            }
+        })
+        .collect_vec()
+        .into();
     Mapping {
         src: src.to_string(),
         dst: dst.to_string(),
@@ -177,7 +233,7 @@ fn str_to_mapping(s: &str) -> Mapping {
 
 #[cfg(test)]
 mod tests {
-    use crate::{IndexMapping, Mapping, str_to_mapping};
+    use crate::{str_to_mapping, IndexMapping, Mapping};
 
     #[test]
     fn test_something() {
@@ -185,15 +241,19 @@ mod tests {
         let expected = Mapping {
             src: "seed".to_string(),
             dst: "soil".to_string(),
-            mappings: vec![IndexMapping {
-                start_incl: 50,
-                end_excl: 98,
-                offset: 2,
-            }, IndexMapping {
-                start_incl: 98,
-                end_excl: 100,
-                offset: -48,
-            }].into(),
+            mappings: vec![
+                IndexMapping {
+                    start_incl: 50,
+                    end_excl: 98,
+                    offset: 2,
+                },
+                IndexMapping {
+                    start_incl: 98,
+                    end_excl: 100,
+                    offset: -48,
+                },
+            ]
+            .into(),
         };
         let actual = str_to_mapping(input);
         assert_eq!(expected, actual);
@@ -201,6 +261,9 @@ mod tests {
         assert_eq!(51, actual.to_dst(99));
         assert_eq!(55, actual.to_dst(53));
         assert_eq!(10, actual.to_dst(10));
-        assert_eq!(vec![(0, 50), (52, 100), (50, 52)], actual.to_dst_ranges(0, 100));
+        assert_eq!(
+            vec![(0, 50), (52, 100), (50, 52)],
+            actual.to_dst_ranges(0, 100)
+        );
     }
 }

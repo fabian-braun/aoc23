@@ -1,7 +1,7 @@
-use std::io::BufRead;
-use std::str::FromStr;
 use itertools::Itertools;
 use maplit::hashmap;
+use std::io::BufRead;
+use std::str::FromStr;
 use utilities::get_input;
 
 #[tokio::main]
@@ -29,7 +29,8 @@ async fn main() {
         "nine" => "9",
     };
     let patterns = numbers.keys().cloned().collect_vec();
-    let calibration_value_sum: usize = get_input(1).await
+    let calibration_value_sum: usize = get_input(1)
+        .await
         .lines()
         .map(|s| {
             let first = find_pattern(&patterns, &s, false);
@@ -40,21 +41,17 @@ async fn main() {
             usize::from_str(&first).unwrap()
         })
         .sum();
-    println!("Hello, world! The calibration sum is {}", calibration_value_sum);
+    println!(
+        "Hello, world! The calibration sum is {}",
+        calibration_value_sum
+    );
 }
 
 fn find_pattern(pattern: &[&str], input: &str, r: bool) -> String {
     let match_iter = pattern.iter().filter_map(|p| {
-        let i_start = if r {
-            input.rfind(p)
-        } else {
-            input.find(p)
-        };
-        i_start.map(|i_start| {
-            (i_start, i_start + p.len())
-        })
-    }
-    );
+        let i_start = if r { input.rfind(p) } else { input.find(p) };
+        i_start.map(|i_start| (i_start, i_start + p.len()))
+    });
     let (start, end) = if r {
         match_iter.max_by_key(|tuple| tuple.1).unwrap()
     } else {
@@ -64,7 +61,6 @@ fn find_pattern(pattern: &[&str], input: &str, r: bool) -> String {
     let (_, slice) = prefix.split_at(start);
     slice.to_string()
 }
-
 
 #[cfg(test)]
 mod tests {

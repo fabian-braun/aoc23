@@ -1,26 +1,27 @@
-use ndarray::{Array2, Axis, s};
+use ndarray::{s, Array2, Axis};
 
 #[tokio::main]
 async fn main() {
     let content = utilities::get_input(13).await;
-    let result: usize = content.split("\n\n").map(|pattern| {
-        let y_len: usize = pattern.lines().count();
-        let x_len: usize = pattern.lines().next().unwrap().len();
-        let mut map = Array2::from_elem((y_len, x_len), false);
-        pattern.lines()
-            .enumerate().for_each(|(y, line)| {
-            line.chars().enumerate()
-                .for_each(|(x, c)| {
+    let result: usize = content
+        .split("\n\n")
+        .map(|pattern| {
+            let y_len: usize = pattern.lines().count();
+            let x_len: usize = pattern.lines().next().unwrap().len();
+            let mut map = Array2::from_elem((y_len, x_len), false);
+            pattern.lines().enumerate().for_each(|(y, line)| {
+                line.chars().enumerate().for_each(|(x, c)| {
                     map[(y, x)] = c == '#';
                 });
-        });
-        let mut score = find_reflection_rows(map.clone()) * 100;
-        if score == 0 {
-            map.swap_axes(0, 1);
-            score = find_reflection_rows(map);
-        }
-        score
-    }).sum();
+            });
+            let mut score = find_reflection_rows(map.clone()) * 100;
+            if score == 0 {
+                map.swap_axes(0, 1);
+                score = find_reflection_rows(map);
+            }
+            score
+        })
+        .sum();
 
     println!("Part I solution: {}", result);
 }
@@ -35,8 +36,12 @@ fn find_reflection_rows(pattern: Array2<bool>) -> usize {
         let mut y_end = y_start + elems_per_reflection + elems_per_reflection - 1;
         let mut total_diff = 0;
         while y_start < y_end {
-            let diff = &pattern.slice(s![y_start..=y_start, ..]) ^ &pattern.slice(s![y_end..=y_end, ..]);
-            let diff = diff.iter().map(|b: &bool| b.then(|| 1).unwrap_or_default()).sum::<usize>();
+            let diff =
+                &pattern.slice(s![y_start..=y_start, ..]) ^ &pattern.slice(s![y_end..=y_end, ..]);
+            let diff = diff
+                .iter()
+                .map(|b: &bool| b.then(|| 1).unwrap_or_default())
+                .sum::<usize>();
             total_diff += diff;
             if total_diff > 1 {
                 continue 'outer;

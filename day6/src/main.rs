@@ -1,19 +1,37 @@
-use std::str::FromStr;
 use itertools::Itertools;
+use std::str::FromStr;
 
 fn main() {
     let races = vec![
-        Race { time: 42, record: 308 },
-        Race { time: 89, record: 1170 },
-        Race { time: 91, record: 1291 },
-        Race { time: 89, record: 1467 },
+        Race {
+            time: 42,
+            record: 308,
+        },
+        Race {
+            time: 89,
+            record: 1170,
+        },
+        Race {
+            time: 91,
+            record: 1291,
+        },
+        Race {
+            time: 89,
+            record: 1467,
+        },
     ];
     let big_race = Race {
         time: 42899189,
         record: 308117012911467,
     };
 
-    println!("Part I: {}", races.iter().map(|m| m.record_beating_ways()).product::<usize>());
+    println!(
+        "Part I: {}",
+        races
+            .iter()
+            .map(|m| m.record_beating_ways())
+            .product::<usize>()
+    );
     println!("Part II: {}", big_race.record_beating_ways());
 }
 
@@ -51,10 +69,7 @@ mod tests {
 
     #[test]
     fn test_something() {
-        let race1 = Race {
-            time: 7,
-            record: 9,
-        };
+        let race1 = Race { time: 7, record: 9 };
         let race2 = Race {
             time: 15,
             record: 40,

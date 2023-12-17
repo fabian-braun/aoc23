@@ -10,16 +10,14 @@ async fn main() {
     let mut start_y = 0;
     let mut start_x = 0;
 
-    content.lines()
-        .enumerate().for_each(|(y, line)| {
-        line.chars().enumerate()
-            .for_each(|(x, c)| {
-                map[(y, x)] = c;
-                if c == 'S' {
-                    start_y = y;
-                    start_x = x;
-                }
-            });
+    content.lines().enumerate().for_each(|(y, line)| {
+        line.chars().enumerate().for_each(|(x, c)| {
+            map[(y, x)] = c;
+            if c == 'S' {
+                start_y = y;
+                start_x = x;
+            }
+        });
     });
 
     println!("Part I solution: {}", map);
@@ -28,8 +26,8 @@ async fn main() {
 // prev, curr, next
 fn next_y_x(curr_c: char, (prev_y, prev_x): (i64, i64)) -> (i64, i64) {
     match curr_c {
-        '|' => { (0, 0) }
-        _ => { (0, 0) }
+        '|' => (0, 0),
+        _ => (0, 0),
     }
 }
 

@@ -1,4 +1,4 @@
-use std::fs::{create_dir_all, File, read_to_string};
+use std::fs::{create_dir_all, read_to_string, File};
 use std::io;
 
 pub async fn get_example(day: usize) -> String {
@@ -18,11 +18,15 @@ fn input_file_name(day: usize) -> String {
     format!("data/input_day{day}.txt")
 }
 
-fn example_file_name(day: usize) -> String { format!("data/example_day{day}.txt") }
+fn example_file_name(day: usize) -> String {
+    format!("data/example_day{day}.txt")
+}
 
 async fn download_example(day: usize) {
     _ = create_dir_all("data");
-    let resp = reqwest::get(format!("https://adventofcode.com/2023/day/{day}")).await.expect("request failed");
+    let resp = reqwest::get(format!("https://adventofcode.com/2023/day/{day}"))
+        .await
+        .expect("request failed");
     let body = resp.text().await.expect("body invalid");
     let mut example = "".to_string();
     let mut example_started = false;

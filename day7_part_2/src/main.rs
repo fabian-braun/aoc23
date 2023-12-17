@@ -1,10 +1,11 @@
+use itertools::Itertools;
 use std::fs::read_to_string;
 use std::str::FromStr;
-use itertools::Itertools;
 
 fn main() {
     let file_context = read_to_string("input_day7").unwrap();
-    let count: usize = file_context.lines()
+    let count: usize = file_context
+        .lines()
         .map(|line| HandBid::from_str(line).unwrap())
         .sorted()
         .map(|hand_bid| {
@@ -12,9 +13,7 @@ fn main() {
             hand_bid.bid
         })
         .enumerate()
-        .map(|(idx, bid)| {
-            (idx + 1) * bid
-        })
+        .map(|(idx, bid)| (idx + 1) * bid)
         .sum();
 
     println!("Part I solution: {}", count);
@@ -36,9 +35,17 @@ impl Hand {
             } else if counts.len() == 4 {
                 Typ::OnePair
             } else if counts.len() == 3 {
-                if *counts.values().max().unwrap() == 3usize { Typ::ThreeOfKind } else { Typ::TwoPair }
+                if *counts.values().max().unwrap() == 3usize {
+                    Typ::ThreeOfKind
+                } else {
+                    Typ::TwoPair
+                }
             } else if counts.len() == 2 {
-                if *counts.values().max().unwrap() == 4usize { Typ::FourOfKind } else { Typ::FullHouse }
+                if *counts.values().max().unwrap() == 4usize {
+                    Typ::FourOfKind
+                } else {
+                    Typ::FullHouse
+                }
             } else {
                 Typ::FiveOfKind
             }
@@ -51,7 +58,11 @@ impl Hand {
                 Typ::ThreeOfKind
             } else if counts.len() == 2 {
                 // (2,2,0,0) | (3,1,0,0) + 1J
-                if *counts.values().next().unwrap() == 2usize { Typ::FullHouse } else { Typ::FourOfKind }
+                if *counts.values().next().unwrap() == 2usize {
+                    Typ::FullHouse
+                } else {
+                    Typ::FourOfKind
+                }
             } else {
                 Typ::FiveOfKind
             }
@@ -77,10 +88,7 @@ impl Hand {
         } else {
             Typ::FiveOfKind
         };
-        Self {
-            typ,
-            labels: hand,
-        }
+        Self { typ, labels: hand }
     }
 
     fn typ(&self) -> Typ {
@@ -101,10 +109,7 @@ impl FromStr for HandBid {
         let (hand, bid) = s.split_once(' ').unwrap();
         let bid = usize::from_str(bid).unwrap();
         let hand = hand_from_str(hand)?;
-        Ok(Self {
-            labels: hand,
-            bid,
-        })
+        Ok(Self { labels: hand, bid })
     }
 }
 
@@ -140,8 +145,9 @@ enum Label {
 
 fn hand_from_str(s: &str) -> Result<Hand, String> {
     let mut result: [Label; 5] = [Label::A; 5];
-    s.chars().take(5).map(|c| {
-        match c {
+    s.chars()
+        .take(5)
+        .map(|c| match c {
             '2' => Label::L2,
             '3' => Label::L3,
             '4' => Label::L4,
@@ -155,14 +161,16 @@ fn hand_from_str(s: &str) -> Result<Hand, String> {
             'Q' => Label::Q,
             'K' => Label::K,
             'A' => Label::A,
-            invalid => { panic!("Invalid char {}", invalid) }
-        }
-    }).enumerate().for_each(|(i, lbl)| {
-        result[i] = lbl;
-    });
+            invalid => {
+                panic!("Invalid char {}", invalid)
+            }
+        })
+        .enumerate()
+        .for_each(|(i, lbl)| {
+            result[i] = lbl;
+        });
     Ok(Hand::new(result))
 }
-
 
 #[cfg(test)]
 mod tests {

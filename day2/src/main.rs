@@ -1,9 +1,9 @@
+use itertools::Itertools;
+use maplit::hashmap;
 use std::fmt;
 use std::fmt::Display;
 use std::fs::read_to_string;
 use std::str::FromStr;
-use itertools::Itertools;
-use maplit::hashmap;
 
 type GameId = usize;
 
@@ -50,24 +50,18 @@ impl Draw {
 }
 
 fn draws_possible(draws: &[Draw]) -> bool {
-    draws.iter().all(|draw| {
-        draw.red < 13 &&
-            draw.green < 14 &&
-            draw.blue < 15
-    })
+    draws
+        .iter()
+        .all(|draw| draw.red < 13 && draw.green < 14 && draw.blue < 15)
 }
-
 
 fn draws_hull(draws: &[Draw]) -> Draw {
-    draws.iter().fold(Draw::default(), |acc, x| {
-        Draw {
-            red: acc.red.max(x.red),
-            green: acc.green.max(x.green),
-            blue: acc.blue.max(x.blue),
-        }
+    draws.iter().fold(Draw::default(), |acc, x| Draw {
+        red: acc.red.max(x.red),
+        green: acc.green.max(x.green),
+        blue: acc.blue.max(x.blue),
     })
 }
-
 
 fn split_line(line: String) -> (GameId, Vec<Draw>) {
     let (game_id, game) = line.split_once(':').unwrap();
@@ -76,28 +70,26 @@ fn split_line(line: String) -> (GameId, Vec<Draw>) {
 
     let game: String = game.split_whitespace().collect();
     let draws = game.split(';');
-    let draws = draws.map(|draw| {
-        let parts = draw.split(',');
-        let mut red = 0;
-        let mut green = 0;
-        let mut blue = 0;
-        for part in parts {
-            if let Some(prefix) = part.strip_suffix("red") {
-                red = usize::from_str(prefix).unwrap();
+    let draws = draws
+        .map(|draw| {
+            let parts = draw.split(',');
+            let mut red = 0;
+            let mut green = 0;
+            let mut blue = 0;
+            for part in parts {
+                if let Some(prefix) = part.strip_suffix("red") {
+                    red = usize::from_str(prefix).unwrap();
+                }
+                if let Some(prefix) = part.strip_suffix("green") {
+                    green = usize::from_str(prefix).unwrap();
+                }
+                if let Some(prefix) = part.strip_suffix("blue") {
+                    blue = usize::from_str(prefix).unwrap();
+                }
             }
-            if let Some(prefix) = part.strip_suffix("green") {
-                green = usize::from_str(prefix).unwrap();
-            }
-            if let Some(prefix) = part.strip_suffix("blue") {
-                blue = usize::from_str(prefix).unwrap();
-            }
-        }
-        Draw {
-            red,
-            green,
-            blue,
-        }
-    }).collect_vec();
+            Draw { red, green, blue }
+        })
+        .collect_vec();
 
     (game_id, draws)
 }
