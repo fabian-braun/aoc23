@@ -3,6 +3,7 @@ use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 use petgraph::dot::Dot;
 use petgraph::{Directed, Graph, Incoming, Outgoing};
+use petgraph::prelude::EdgeRef;
 
 #[tokio::main]
 async fn main() {
@@ -75,8 +76,34 @@ async fn main() {
         });
     }
 
+    // convert into graph of direct support
+    let to_remove = graph.edge_references().filter_map(|edge_ref| {
+        let supporting_node_n = edge_ref.source();
+        let supported_node_n = edge_ref.target();
+        let z_max = graph.node_weight(supporting_node_n).unwrap().z_max;
+        let z_min = graph.node_weight(supported_node_n).unwrap().z_max;
+        if z_min != z_max + 1 {
+            Some(edge_ref.id())
+        } else {
+            None
+        }
+    }).collect_vec();
+
+    to_remove.iter().for_each(|to_remove| {
+        graph.remove_edge(*to_remove);
+    });
+    println!("{}", Dot::new(&graph));
+
     let disintegratable_bricks: usize = graph.node_indices().filter(|brick_n| {
-        graph.neighbors_directed(*brick_n, Incoming).count() > 1
+        graph.neighbors_directed(*brick_n, Outgoing).all(|supported_neighbour_n| {
+            let supporting_z_max = graph.neighbors_directed(supported_neighbour_n, Incoming).map(|supporting_neighbour_n| {
+                graph[supporting_neighbour_n].z_max
+            }).max().unwrap_or_default();
+            let supporting_neighbours = graph.neighbors_directed(supported_neighbour_n, Incoming).filter(|supporting_neighbour_n| {
+                graph[*supporting_neighbour_n].z_max == supporting_z_max
+            }).count();
+            supporting_neighbours > 1
+        })
     }).count();
 
 
