@@ -7,8 +7,7 @@ use std::str::FromStr;
 
 #[tokio::main]
 async fn main() {
-    let content = utilities::get_input(22).await;
-    let alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+    let content = utilities::get_example(22).await;
     let bricks: Vec<Brick> = content
         .lines()
         .enumerate()
@@ -25,7 +24,6 @@ async fn main() {
 
             Brick {
                 idx,
-                id: alphabet[idx % alphabet.len()],
                 z_min: z_a.min(z_b),
                 z_max: z_a.max(z_b),
                 y_min: y_a.min(y_b),
@@ -84,7 +82,6 @@ async fn main() {
             graph[g[brick.idx]] = brick;
         });
     }
-    // println!("{}", Dot::new(&graph));
 
     // convert into graph of direct support
     let to_remove = graph
@@ -93,7 +90,7 @@ async fn main() {
             let supporting_node_n = edge_ref.source();
             let supported_node_n = edge_ref.target();
             let z_max = graph.node_weight(supporting_node_n).unwrap().z_max;
-            let z_min = graph.node_weight(supported_node_n).unwrap().z_max;
+            let z_min = graph.node_weight(supported_node_n).unwrap().z_min;
             if z_min != z_max + 1 {
                 Some(edge_ref.id())
             } else {
@@ -103,20 +100,23 @@ async fn main() {
         .collect_vec();
 
     to_remove.iter().for_each(|to_remove| {
-        graph.remove_edge(*to_remove);
+        assert!(graph.remove_edge(*to_remove).is_some());
     });
+    // println!("{}", Dot::new(&graph));
 
     let disintegratable_bricks: usize = graph
         .node_indices()
         .filter(|brick_n| {
             let brick = graph[*brick_n];
-            // println!("{brick} vvvvvvvvvvvvvvvvv");
+            print!("{} supports", brick.idx);
             let disintegratable = graph.neighbors_directed(*brick_n, Outgoing).all(|nei| {
                 let neigh = graph[nei];
-                // println!("supporting {neigh}");
-                graph.neighbors_directed(nei, Incoming).count() > 1
+                print!(" {}", neigh.idx);
+                let supported_by = graph.neighbors_directed(nei, Incoming).count();
+                print!("({})", supported_by);
+                supported_by > 1
             });
-            // println!("{disintegratable} ^^^^^^^^^^^^^^^");
+            println!("\n{}", disintegratable);
             disintegratable
         })
         .count();
@@ -128,7 +128,6 @@ async fn main() {
 struct Brick {
     // all inclusive
     idx: usize,
-    id: char,
     z_min: i64,
     z_max: i64,
     y_min: i64,
@@ -159,7 +158,7 @@ impl Display for Brick {
         write!(
             f,
             "{},{},{}~{},{},{} <- {}",
-            self.x_min, self.y_min, self.z_min, self.x_max, self.y_max, self.z_max, self.id
+            self.x_min, self.y_min, self.z_min, self.x_max, self.y_max, self.z_max, self.idx
         )
     }
 }
