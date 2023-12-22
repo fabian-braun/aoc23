@@ -7,7 +7,7 @@ use std::str::FromStr;
 
 #[tokio::main]
 async fn main() {
-    let content = utilities::get_example(22).await;
+    let content = utilities::get_input(22).await;
     let bricks: Vec<Brick> = content
         .lines()
         .enumerate()
@@ -99,7 +99,16 @@ async fn main() {
         })
         .collect_vec();
 
-    to_remove.iter().for_each(|to_remove| {
+    // graph.retain_edges(|proxy| {
+    //     let supporting_node_n = proxy.;
+    //     let supported_node_n = edge_ref.target();
+    //     let z_max = graph.node_weight(supporting_node_n).unwrap().z_max;
+    //     let z_min = graph.node_weight(supported_node_n).unwrap().z_min;
+    //
+    //     z_min != z_max + 1
+    // });
+
+    to_remove.iter().rev().for_each(|to_remove| {
         assert!(graph.remove_edge(*to_remove).is_some());
     });
     // println!("{}", Dot::new(&graph));
