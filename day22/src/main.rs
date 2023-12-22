@@ -55,7 +55,7 @@ async fn main() {
     while something_fell {
         let updated_bricks = graph.node_indices().filter_map(|brick_n| {
             let brick = graph[brick_n];
-            let mut new_z_min = 0;
+            let mut new_z_min = 1;
             graph.neighbors_directed(brick_n, Incoming).for_each(|supporting_brick_n| {
                 let supporting_brick = graph[supporting_brick_n];
                 new_z_min = new_z_min.max(supporting_brick.z_max + 1)
@@ -75,6 +75,7 @@ async fn main() {
             graph[g[brick.idx]] = brick;
         });
     }
+    println!("{}", Dot::new(&graph));
 
     // convert into graph of direct support
     let to_remove = graph.edge_references().filter_map(|edge_ref| {
@@ -92,18 +93,18 @@ async fn main() {
     to_remove.iter().for_each(|to_remove| {
         graph.remove_edge(*to_remove);
     });
-    println!("{}", Dot::new(&graph));
 
     let disintegratable_bricks: usize = graph.node_indices().filter(|brick_n| {
-        graph.neighbors_directed(*brick_n, Outgoing).all(|supported_neighbour_n| {
-            let supporting_z_max = graph.neighbors_directed(supported_neighbour_n, Incoming).map(|supporting_neighbour_n| {
-                graph[supporting_neighbour_n].z_max
-            }).max().unwrap_or_default();
-            let supporting_neighbours = graph.neighbors_directed(supported_neighbour_n, Incoming).filter(|supporting_neighbour_n| {
-                graph[*supporting_neighbour_n].z_max == supporting_z_max
-            }).count();
-            supporting_neighbours > 1
-        })
+        let brick = graph[*brick_n];
+        println!("{brick} vvvvvvvvvvvvvvvvv");
+        let disintegratable = graph.neighbors_directed(*brick_n, Outgoing).all(|nei|
+            {
+                let neigh = graph[nei];
+                println!("supporting {neigh}");
+                graph.neighbors_directed(nei, Incoming).count() > 1
+            });
+        println!("{disintegratable} ^^^^^^^^^^^^^^^");
+        disintegratable
     }).count();
 
 
@@ -142,7 +143,7 @@ impl Brick {
 
 impl Display for Brick {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.id)
+        write!(f, "{},{},{}~{},{},{} <- {}", self.x_min, self.y_min, self.z_min, self.x_max, self.y_max, self.z_max, self.id)
     }
 }
 
