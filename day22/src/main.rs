@@ -1,13 +1,13 @@
 use itertools::Itertools;
+use petgraph::dot::Dot;
+use petgraph::prelude::EdgeRef;
+use petgraph::{Directed, Graph, Incoming, Outgoing};
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
-use petgraph::dot::Dot;
-use petgraph::{Directed, Graph, Incoming, Outgoing};
-use petgraph::prelude::EdgeRef;
 
 #[tokio::main]
 async fn main() {
-    let content = utilities::get_example(22).await;
+    let content = utilities::get_input(22).await;
     let alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
     let bricks: Vec<Brick> = content
         .lines()
@@ -36,10 +36,14 @@ async fn main() {
         })
         .collect_vec();
     let mut graph: Graph<Brick, bool, Directed> = Graph::new();
-    let g = bricks.iter().enumerate().map(|(idx, brick)| {
-        let node_idx = graph.add_node(*brick);
-        node_idx
-    }).collect_vec();
+    let g = bricks
+        .iter()
+        .enumerate()
+        .map(|(idx, brick)| {
+            let node_idx = graph.add_node(*brick);
+            node_idx
+        })
+        .collect_vec();
     bricks.iter().combinations(2).for_each(|brickpair| {
         let a = brickpair[0];
         let b = brickpair[1];
@@ -50,63 +54,72 @@ async fn main() {
             graph.add_edge(g[b.idx], g[a.idx], true);
         }
     });
-    println!("{}", Dot::new(&graph));
+    // println!("{}", Dot::new(&graph));
     let mut something_fell = true;
     while something_fell {
-        let updated_bricks = graph.node_indices().filter_map(|brick_n| {
-            let brick = graph[brick_n];
-            let mut new_z_min = 1;
-            graph.neighbors_directed(brick_n, Incoming).for_each(|supporting_brick_n| {
-                let supporting_brick = graph[supporting_brick_n];
-                new_z_min = new_z_min.max(supporting_brick.z_max + 1)
-            });
-            if brick.z_min != new_z_min {
-                Some(Brick {
-                    z_min: new_z_min,
-                    z_max: new_z_min + brick.z_max - brick.z_min,
-                    ..brick
-                })
-            } else {
-                None
-            }
-        }).collect_vec();
+        let updated_bricks = graph
+            .node_indices()
+            .filter_map(|brick_n| {
+                let brick = graph[brick_n];
+                let mut new_z_min = 1;
+                graph
+                    .neighbors_directed(brick_n, Incoming)
+                    .for_each(|supporting_brick_n| {
+                        let supporting_brick = graph[supporting_brick_n];
+                        new_z_min = new_z_min.max(supporting_brick.z_max + 1)
+                    });
+                if brick.z_min != new_z_min {
+                    Some(Brick {
+                        z_min: new_z_min,
+                        z_max: new_z_min + brick.z_max - brick.z_min,
+                        ..brick
+                    })
+                } else {
+                    None
+                }
+            })
+            .collect_vec();
         something_fell = !updated_bricks.is_empty();
         updated_bricks.into_iter().for_each(|brick| {
             graph[g[brick.idx]] = brick;
         });
     }
-    println!("{}", Dot::new(&graph));
+    // println!("{}", Dot::new(&graph));
 
     // convert into graph of direct support
-    let to_remove = graph.edge_references().filter_map(|edge_ref| {
-        let supporting_node_n = edge_ref.source();
-        let supported_node_n = edge_ref.target();
-        let z_max = graph.node_weight(supporting_node_n).unwrap().z_max;
-        let z_min = graph.node_weight(supported_node_n).unwrap().z_max;
-        if z_min != z_max + 1 {
-            Some(edge_ref.id())
-        } else {
-            None
-        }
-    }).collect_vec();
+    let to_remove = graph
+        .edge_references()
+        .filter_map(|edge_ref| {
+            let supporting_node_n = edge_ref.source();
+            let supported_node_n = edge_ref.target();
+            let z_max = graph.node_weight(supporting_node_n).unwrap().z_max;
+            let z_min = graph.node_weight(supported_node_n).unwrap().z_max;
+            if z_min != z_max + 1 {
+                Some(edge_ref.id())
+            } else {
+                None
+            }
+        })
+        .collect_vec();
 
     to_remove.iter().for_each(|to_remove| {
         graph.remove_edge(*to_remove);
     });
 
-    let disintegratable_bricks: usize = graph.node_indices().filter(|brick_n| {
-        let brick = graph[*brick_n];
-        println!("{brick} vvvvvvvvvvvvvvvvv");
-        let disintegratable = graph.neighbors_directed(*brick_n, Outgoing).all(|nei|
-            {
+    let disintegratable_bricks: usize = graph
+        .node_indices()
+        .filter(|brick_n| {
+            let brick = graph[*brick_n];
+            // println!("{brick} vvvvvvvvvvvvvvvvv");
+            let disintegratable = graph.neighbors_directed(*brick_n, Outgoing).all(|nei| {
                 let neigh = graph[nei];
-                println!("supporting {neigh}");
+                // println!("supporting {neigh}");
                 graph.neighbors_directed(nei, Incoming).count() > 1
             });
-        println!("{disintegratable} ^^^^^^^^^^^^^^^");
-        disintegratable
-    }).count();
-
+            // println!("{disintegratable} ^^^^^^^^^^^^^^^");
+            disintegratable
+        })
+        .count();
 
     println!("Part I solution: {}", disintegratable_bricks);
 }
@@ -143,7 +156,11 @@ impl Brick {
 
 impl Display for Brick {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{},{},{}~{},{},{} <- {}", self.x_min, self.y_min, self.z_min, self.x_max, self.y_max, self.z_max, self.id)
+        write!(
+            f,
+            "{},{},{}~{},{},{} <- {}",
+            self.x_min, self.y_min, self.z_min, self.x_max, self.y_max, self.z_max, self.id
+        )
     }
 }
 
