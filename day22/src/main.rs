@@ -49,13 +49,38 @@ async fn main() {
             graph.add_edge(g[b.idx], g[a.idx], true);
         }
     });
-    let something_fell = true;
-    while something_fell {
-
-    }
     println!("{}", Dot::new(&graph));
+    let mut something_fell = true;
+    while something_fell {
+        let updated_bricks = graph.node_indices().filter_map(|brick_n| {
+            let brick = graph[brick_n];
+            let mut new_z_min = 0;
+            graph.neighbors_directed(brick_n, Incoming).for_each(|supporting_brick_n| {
+                let supporting_brick = graph[supporting_brick_n];
+                new_z_min = new_z_min.max(supporting_brick.z_max + 1)
+            });
+            if brick.z_min != new_z_min {
+                Some(Brick {
+                    z_min: new_z_min,
+                    z_max: new_z_min + brick.z_max - brick.z_min,
+                    ..brick
+                })
+            } else {
+                None
+            }
+        }).collect_vec();
+        something_fell = !updated_bricks.is_empty();
+        updated_bricks.into_iter().for_each(|brick| {
+            graph[g[brick.idx]] = brick;
+        });
+    }
 
-    println!("Part I solution: {}", 0);
+    let disintegratable_bricks: usize = graph.node_indices().filter(|brick_n| {
+        graph.neighbors_directed(*brick_n, Incoming).count() > 1
+    }).count();
+
+
+    println!("Part I solution: {}", disintegratable_bricks);
 }
 
 #[derive(Debug, Hash, Eq, PartialEq, Copy, Clone, Default)]
