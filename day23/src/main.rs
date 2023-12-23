@@ -30,7 +30,7 @@ async fn main() {
             }
         })
     });
-    let start = (0 as i64, 1 as i64);
+    let start = (0i64, 1i64);
     let end = (
         content.lines().count() as i64 - 1,
         content.lines().next().unwrap().len() as i64 - 2,
@@ -54,16 +54,16 @@ async fn main() {
                     }
                 }
                 '>' => {
-                    neighbours.insert((y, x), vec![(y, x + 1)]);
+                    neighbours.insert((y, x), vec![(y, x - 1), (y, x + 1)]);
                 }
                 'v' => {
-                    neighbours.insert((y, x), vec![(y + 1, x)]);
+                    neighbours.insert((y, x), vec![(y - 1, x), (y + 1, x)]);
                 }
                 '^' => {
-                    neighbours.insert((y, x), vec![(y - 1, x)]);
+                    neighbours.insert((y, x), vec![(y + 1, x), (y - 1, x)]);
                 }
                 '<' => {
-                    neighbours.insert((y, x), vec![(y, x - 1)]);
+                    neighbours.insert((y, x), vec![(y, x + 1), (y, x - 1)]);
                 }
                 _ => {}
             }
@@ -74,7 +74,7 @@ async fn main() {
     let mut current_path = vec![start];
     let max = evaluate_neighbours(&mut current_path, &mut visited, &neighbours, &end);
 
-    println!("Part I solution: {}", max - 1);
+    println!("Part II solution: {}", max - 1);
 }
 
 fn evaluate_neighbours(
@@ -88,16 +88,16 @@ fn evaluate_neighbours(
         return path.len();
     }
 
-    let mut max = path.len();
+    let mut max = 0;
     for neighbour in &neighbours[current] {
         if visited.contains(neighbour) {
             continue;
         }
         path.push(*neighbour);
-        visited.insert(*neighbour);
+        assert!(visited.insert(*neighbour));
         max = max.max(evaluate_neighbours(path, visited, neighbours, end));
-        path.pop();
-        visited.remove(&neighbour);
+        assert!(path.pop().is_some());
+        assert!(visited.remove(&neighbour));
     }
     max
 }
