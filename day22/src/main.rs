@@ -103,7 +103,6 @@ async fn main() {
         assert!(graph.remove_edge(*to_remove).is_some());
     });
 
-
     let others_to_fall = |brick_n| {
         graph.neighbors_directed(brick_n, Outgoing).filter(|nei| {
             let supported_by = graph.neighbors_directed(*nei, Incoming).count();
@@ -116,13 +115,15 @@ async fn main() {
             let mut others_to_fall_count = 0;
             let mut others_to_fall_next = vec![brick_n];
             while !others_to_fall_next.is_empty() {
-                others_to_fall_next = others_to_fall_next.iter().flat_map(|on| others_to_fall(*on)).collect_vec();
+                others_to_fall_next = others_to_fall_next
+                    .iter()
+                    .flat_map(|on| others_to_fall(*on))
+                    .collect_vec();
                 others_to_fall_count += others_to_fall_next.len();
             }
             others_to_fall_count
         })
         .sum();
-
 
     println!("\nPart II solution: {}", falling);
 }
