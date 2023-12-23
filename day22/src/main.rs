@@ -7,7 +7,7 @@ use std::str::FromStr;
 
 #[tokio::main]
 async fn main() {
-    let content = utilities::get_input(22).await;
+    let content = utilities::get_example(22).await;
     let bricks: Vec<Brick> = content
         .lines()
         .enumerate()
@@ -102,26 +102,29 @@ async fn main() {
     to_remove.iter().rev().for_each(|to_remove| {
         assert!(graph.remove_edge(*to_remove).is_some());
     });
-    // println!("{}", Dot::new(&graph));
 
-    let disintegratable_bricks: usize = graph
-        .node_indices()
-        .filter(|brick_n| {
-            let brick = graph[*brick_n];
-            print!("{} supports", brick.idx);
-            let disintegratable = graph.neighbors_directed(*brick_n, Outgoing).all(|nei| {
-                let neigh = graph[nei];
-                print!(" {}", neigh.idx);
-                let supported_by = graph.neighbors_directed(nei, Incoming).count();
-                print!("({})", supported_by);
-                supported_by > 1
-            });
-            println!("\n{}", disintegratable);
-            disintegratable
+
+    let others_to_fall = |brick_n| {
+        graph.neighbors_directed(brick_n, Outgoing).filter(|nei| {
+            let supported_by = graph.neighbors_directed(*nei, Incoming).count();
+            supported_by == 1
         })
-        .count();
+    };
+    let falling: usize = graph
+        .node_indices()
+        .map(|brick_n| {
+            let mut others_to_fall_count = 0;
+            let mut others_to_fall_next = vec![brick_n];
+            while !others_to_fall_next.is_empty() {
+                others_to_fall_next = others_to_fall_next.iter().flat_map(|on| others_to_fall(*on)).collect_vec();
+                others_to_fall_count += others_to_fall_next.len();
+            }
+            others_to_fall_count
+        })
+        .sum();
 
-    println!("Part I solution: {}", disintegratable_bricks);
+
+    println!("\nPart II solution: {}", falling);
 }
 
 #[derive(Debug, Hash, Eq, PartialEq, Copy, Clone, Default)]
